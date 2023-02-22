@@ -17,14 +17,26 @@ import (
 )
 
 type item struct {
-	Host string
+	Host string `json:"host,omitempty"`
 	hn.Item
 }
 
 type templateData struct {
-	Stories []item
-	Time    time.Duration
+	Stories []item        `json:"stories,omitempty"`
+	Time    time.Duration `json:"time,omitempty"`
 }
+
+type result struct {
+	idx  int
+	item item
+	err  error
+}
+
+var (
+	cache           []item
+	cacheExpiration time.Time
+	cacheMutex      sync.Mutex
+)
 
 func main() {
 
@@ -44,13 +56,7 @@ func main() {
 	log.Fatal(http.ListenAndServe(fmt.Sprintf(":%d", port), nil))
 }
 
-
-var (
-	cache           []item
-	cacheExpiration time.Time
-	cacheMutex      sync.Mutex
-)
-
+// handles the routing
 func handler(numStories int, tpl *template.Template) http.HandlerFunc {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		start := time.Now()
@@ -73,6 +79,7 @@ func handler(numStories int, tpl *template.Template) http.HandlerFunc {
 	})
 }
 
+// returns stories from cache
 func getCachedStories(numStories int) ([]item, error) {
 	cacheMutex.Lock()
 	defer cacheMutex.Unlock()
@@ -88,6 +95,7 @@ func getCachedStories(numStories int) ([]item, error) {
 	return cache, nil
 }
 
+// get the stories
 func getTopStories(numStories int) ([]item, error) {
 	var client hn.Client
 	ids, err := client.TopItems()
@@ -104,12 +112,8 @@ func getTopStories(numStories int) ([]item, error) {
 	return stories[:numStories], nil
 }
 
+// getStories returns
 func getStories(ids []int) []item {
-	type result struct {
-		idx  int
-		item item
-		err  error
-	}
 	resultCh := make(chan result)
 	for i := 0; i < len(ids); i++ {
 		go func(idx, id int) {
