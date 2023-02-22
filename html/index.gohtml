@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title> Quiet Hacker News </title>
+        <link rel="icon" type="image/png" href="data:image/png;base64,iVBORw0KGgo=">
+    </head>
+    <body>
+        <h1> Quiet Hacker News </h1>
+        <ol>
+            {{range .Stories}}
+                <li><a href="{{.URL}}">{{.Title}}</a> <span class="host">({{.Host}})</span></li>
+            {{end}}
+        </ol>
+        <p class="time">This page was rendered in {{.Time}}</p>
+    </body>
+</html>
+
+
+<!-- CSS -->
+<style>
+    body {
+        padding: 20px;
+    }
+    body, a {
+        color: #335
+    }
+    li {
+        padding: 4px 0;
+    }
+    .host {
+        color: #888;
+    }
+    .time {
+        color: #888;
+    }
+    .footer, .footer a {
+        color: #888;
+    }
+</style>
